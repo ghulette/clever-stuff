@@ -31,7 +31,7 @@ var = Var
 occurs :: Name -> Term -> Bool
 occurs x (Var y) | x == y = True
 occurs x (Var y) = False
-occurs x (Func f ts) = any (occurs x) ts
+occurs x (Func _ ts) = any (occurs x) ts
 
 
 -- Environments
@@ -42,10 +42,10 @@ empty :: Env
 empty = []
 
 substitute :: Env -> Term -> Term
-substitute e t = foldr sub t e
-  where sub (x,t) (Var y) | x == y = t
-        sub (x,_) (Var y) = Var y
-        sub (x,t) (Func f ts) = Func f (map (sub (x,t)) ts)
+substitute e t = foldl sub t e
+  where sub (Var y)     (x,t) | x == y = t
+        sub (Var y)     (x,_) = Var y
+        sub (Func f ts) p = Func f (map (flip sub p) ts)
 
 extend :: Name -> Term -> Env -> Env
 extend x t = (:) (x,t)
